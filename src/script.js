@@ -154,12 +154,12 @@ const fontLoader = new FontLoader();
 fontLoader.load(
     '/fonts/helvetiker_regular.typeface.json',
     (font) => {
-        const sceneTitleGeometry = new TextGeometry('Solar system', {
+        const sceneTitleGeometry = new TextGeometry('Solar system by Khafizov Bulat', {
             font: font,
         });
-        const sceneTitleMaterial = new THREE.MeshStandardMaterial({ color: 'purple', wireframe: false});
+        const sceneTitleMaterial = new THREE.MeshStandardMaterial({ color: 'pink', wireframe: false});
         const sceneTitle = new THREE.Mesh(sceneTitleGeometry, sceneTitleMaterial);
-        sceneTitle.position.set(1000, 0, -500);
+        sceneTitle.position.set(1000, 0, -1000);
         sceneTitle.rotation.y = -Math.PI / 2
         scene.add(sceneTitle);
     }
@@ -172,14 +172,14 @@ fontLoader.load(
 /**
  * Свет
  */
-const pointLight = new THREE.PointLight(0xffffff, 1000000, 300);
+const pointLight = new THREE.PointLight(0xffffff, 1, 500);
 gui.add(pointLight, 'intensity').min(1).max(1000000).step(1).name('point light intensity');
 gui.add(pointLight, 'distance').min(1).max(100000).step(1).name('point light distance');;
 pointLight.position.set(0, 0, 0); // Позиция света внутри объекта
 scene.add(pointLight);
 
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-gui.add(ambientLight, 'intensity').min(1).max(100000).step(1).name('ambient light intensity');
+const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+gui.add(ambientLight, 'intensity').min(0).max(1).step(0.01).name('ambient light intensity');
 scene.add(ambientLight);
 
 
@@ -217,6 +217,7 @@ scene.add(camera);
 * Axes helper
 */
 const axesHelper = new THREE.AxesHelper(1000);
+axesHelper.visible = false;
 gui.add(axesHelper, 'visible').name('Axis');
 scene.add(axesHelper)
 
