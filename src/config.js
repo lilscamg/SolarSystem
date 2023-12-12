@@ -3,5 +3,7 @@ export let config = {
     showStars: true,
     objectNumberToObserve: 0,
     stopMoving: true, 
-    stopRotation: true
+    stopRotation: true,
+    stopIss: false,
+    hidePlanets: true
 };

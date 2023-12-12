@@ -1,14 +1,19 @@
+import gsap from 'gsap'
+import * as dat from 'lil-gui'
 import * as THREE from 'three'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
-import gsap from 'gsap'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls';
-import * as dat from 'lil-gui'
-import { PlanetParameters, RingParameters } from './parameters/planetParameters';
-import { PlanetMaterials } from './materials/planetMaterials';
+import { PlanetParameters, RingParameters, issParameters } from './parameters/parameters';
+import { createISS } from './objects/iss'
+import { createPlanet } from './objects/planet';
+import { createRocket } from './objects/rocket';
+import { createText } from './objects/text3d';
 import { config } from './config';
-import { ISS } from './objects3d/iss'
+
+function getRandomAngle() {
+    return Math.random() * 2 * Math.PI;
+}
 
 
 //#region GUI
@@ -24,14 +29,20 @@ const scene = new THREE.Scene();
 //#region Звезды
 const starsTexture = 'textures/other/stars.jpg'
 const cubeTextureLoader = new THREE.CubeTextureLoader();
-scene.background = cubeTextureLoader.load([
-    starsTexture,
-    starsTexture,
-    starsTexture,
-    starsTexture,
-    starsTexture,
-    starsTexture
-]);
+gui.add(config, 'showStars').name('Show stars').onChange(() => {
+    if (config.showStars) {
+        scene.background = cubeTextureLoader.load([
+            starsTexture,
+            starsTexture,
+            starsTexture,
+            starsTexture,
+            starsTexture,
+            starsTexture
+        ]);
+    }
+    else
+        scene.background = null;
+})
 //#endregion
 
 
@@ -48,11 +59,6 @@ window.addEventListener('dblclick', () => {
 //#endregion
 
 
-//#region Материалы объектов
-const planetMaterials = PlanetMaterials;
-//#endregion
-
-
 //#region Параметры объектов
 const planetParameters = PlanetParameters;
 const ringParameters = RingParameters;
@@ -60,25 +66,11 @@ const ringParameters = RingParameters;
 let planetRadiuses = config.isReal ? planetParameters.realRadiuses : planetParameters.fancyRadiuses;
 let planetDistances = config.isReal ? planetParameters.realDistanceToSun : planetParameters.fancyDistanceToSun; 
 
-gui.add(config, 'stopMoving');
-gui.add(config, 'stopRotation');
+gui.add(config, 'stopMoving').name('Stop moving');
+gui.add(config, 'stopRotation').name('Stop rotating');
+gui.add(config, 'isReal').name('Is real').onChange(() => {
 
-gui.add(config, 'showStars').name('Show stars?').onChange(() => {
-    if (config.showStars) {
-        scene.background = cubeTextureLoader.load([
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture,
-            starsTexture
-        ]);
-    }
-    else
-        scene.background = null;
-})
-
-gui.add(config, 'isReal').name('Is real?').onChange(() => {
+    // planets
     planetRadiuses = config.isReal ? planetParameters.realRadiuses : planetParameters.fancyRadiuses;
     planetDistances = config.isReal ? planetParameters.realDistanceToSun : planetParameters.fancyDistanceToSun; 
 
@@ -94,49 +86,18 @@ gui.add(config, 'isReal').name('Is real?').onChange(() => {
             // x.children[1] = newRingsGeometry;
         }
         else {
-            
             let newGeometry = new THREE.SphereGeometry(newRadius);
             x.geometry = newGeometry;
         }
     });
-});
 
-// gui.add(planetRadiuses, 'Sun').min(1).max(109).step(1).name('Sun radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Sun);
-//     Sun.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Earth').min(1).max(109).step(1).name('Earth radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Earth);
-//     Earth.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Saturn').min(1).max(109).step(1).name('Saturn radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Saturn);
-//     saturnSphere.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Jupiter').min(1).max(109).step(1).name('Jupiter radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Jupiter);
-//     Jupiter.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Mercury').min(1).max(109).step(1).name('Mercury radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Mercury);
-//     Mercury.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Uranus').min(1).max(109).step(1).name('Uranus radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Uranus);
-//     Uranus.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Neptune').min(1).max(109).step(1).name('Neptune radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Neptune);
-//     Neptune.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Mars').min(1).max(109).step(1).name('Mars radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Mars);
-//     Mars.geometry = newGeometry;
-// });
-// gui.add(planetRadiuses, 'Venus').min(1).max(109).step(1).name('Venus radius').onChange(() => {
-//     let newGeometry = new THREE.SphereGeometry(planetRadiuses.Venus);
-//     Venus.geometry = newGeometry;
-// });
+    // iss
+    issDistance = planetRadiuses.Earth + (config.isReal ? issParameters.distance.realDistance : issParameters.distance.fancyDistance);
+    let issScale = config.isReal ? new THREE.Vector3(1, 1, 1).divideScalar(issParameters.size.realSize) :  new THREE.Vector3(1, 1, 1).divideScalar(issParameters.size.fancySize);
+    issSpeed = config.isReal ? issParameters.realSpeed : issParameters.speed.fancySpeed;
+    ISS.scale.set(issScale.x, issScale.y, issScale.z);
+    ISS.position.set(Earth.position.x + issDistance, 0, Earth.position.z)
+});
 //#endregion
 
 
@@ -144,138 +105,101 @@ gui.add(config, 'isReal').name('Is real?').onChange(() => {
 let sphereObjects = []
 
 //#region Sun
-const Sun = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Sun), planetMaterials.planets.Sun);
-Sun.name = 'Sun';
-Sun.position.set(planetDistances.Sun, 0, 0);
-Sun.castShadow = true;
-Sun.visible = false;
-
+let Sun = createPlanet('Sun', config.isReal, true);
 scene.add(Sun);
 sphereObjects.push(Sun);
 //#endregion
 
 //#region Mercury
-const Mercury = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Mercury), planetMaterials.planets.Mercury);
-Mercury.name = 'Mercury';
-Mercury.position.set(planetDistances.Mercury, 0, 0);
-Mercury.castShadow = true;
-Mercury.receiveShadow = true;
-
+let Mercury = createPlanet('Mercury', config.isReal, false);
+Mercury.position.set(planetDistances.Mercury * Math.cos(getRandomAngle()), 0, planetDistances.Mercury * Math.sin(getRandomAngle()));
 scene.add(Mercury);
 sphereObjects.push(Mercury);
 //#endregion
 
 //#region Venus
-const Venus = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Venus), planetMaterials.planets.Venus);
-Venus.name = 'Venus';
-Venus.position.set(planetDistances.Venus, 0, 0);
-Venus.castShadow = true;
-Venus.receiveShadow = true;
-
+let Venus = createPlanet('Venus', config.isReal, false);
+Venus.position.set(planetDistances.Venus * Math.cos(getRandomAngle()), 0, planetDistances.Venus * Math.sin(getRandomAngle()));
 scene.add(Venus);
 sphereObjects.push(Venus);
 //#endregion
 
 //#region Earth
-const Earth = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Earth), planetMaterials.planets.Earth);
-Earth.name = 'Earth';
-Earth.position.set(planetDistances.Earth, 0, 0);
-Earth.castShadow = true;
-Earth.receiveShadow = true;
-
+let Earth = createPlanet('Earth', config.isReal, false);
+Earth.position.set(planetDistances.Earth * Math.cos(getRandomAngle()), 0, planetDistances.Earth * Math.sin(getRandomAngle()));
 scene.add(Earth);
 sphereObjects.push(Earth);
 //#endregion
 
 //#region Mars
-const Mars = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Mars), planetMaterials.planets.Mars);
-Mars.name = 'Mars';
-Mars.position.set(planetDistances.Mars, 0, 0);
-Mars.castShadow = true;
-Mars.receiveShadow = true;
-
+let Mars = createPlanet('Mars', config.isReal, false);
+Mars.position.set(planetDistances.Mars * Math.cos(getRandomAngle()), 0, planetDistances.Mars * Math.sin(getRandomAngle()));
 scene.add(Mars);
 sphereObjects.push(Mars);
 //#endregion
 
 //#region Jupiter
-const Jupiter = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Jupiter), planetMaterials.planets.Jupiter);
-Jupiter.name = 'Jupiter';
-Jupiter.position.set(planetDistances.Jupiter, 0, 0);
-Jupiter.castShadow = true;
-Jupiter.receiveShadow = true;
-
+let Jupiter = createPlanet('Jupiter', config.isReal, false);
+Jupiter.position.set(planetDistances.Jupiter * Math.cos(getRandomAngle()), 0, planetDistances.Jupiter * Math.sin(getRandomAngle()));
 scene.add(Jupiter);
 sphereObjects.push(Jupiter);
 //#endregion
 
 //#region Saturn
-const Saturn = new THREE.Group();
-Saturn.name = 'Saturn';
-const saturnSphere = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Saturn), planetMaterials.planets.Saturn);
-
-const saturnRings = new THREE.Mesh(
-    new THREE.RingGeometry(
-        ringParameters.innerRadiuses.Saturn * planetRadiuses.Saturn, 
-        ringParameters.outerRadiuses.Saturn * planetRadiuses.Saturn), 
-    planetMaterials.rings.Saturn);
-saturnRings.rotation.x = Math.PI * (1/2);
-
-Saturn.add(saturnSphere, saturnRings);
-Saturn.position.set(planetDistances.Saturn, 0, 0)
-Saturn.castShadow = true;
-Saturn.receiveShadow = true;
-
+let Saturn = createPlanet('Saturn', config.isReal, false, { axis: 'x', angle: Math.PI * (1/2)});
+Saturn.position.set(planetDistances.Saturn * Math.cos(getRandomAngle()), 0, planetDistances.Saturn * Math.sin(getRandomAngle()));
 scene.add(Saturn);
 sphereObjects.push(Saturn);
 //#endregion
 
 //#region Uranus
-const Uranus = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Uranus), planetMaterials.planets.Uranus);
-Uranus.name = 'Uranus';
+let Uranus = createPlanet('Uranus', config.isReal, false);
 Uranus.position.set(planetDistances.Uranus, 0, 0);
-Uranus.castShadow = true;
-Uranus.receiveShadow = true;
-
 scene.add(Uranus);
 sphereObjects.push(Uranus);
 //#endregion
 
 //#region Neptune
-const Neptune = new THREE.Mesh(new THREE.SphereGeometry(planetRadiuses.Neptune), planetMaterials.planets.Neptune);
-Neptune.name = 'Neptune';
+let Neptune = createPlanet('Neptune', config.isReal, false);
 Neptune.position.set(planetDistances.Neptune, 0, 0);
-Neptune.castShadow = true;
-Neptune.receiveShadow = true;
-
 scene.add(Neptune);
 sphereObjects.push(Neptune);
 //#endregion
 
+sphereObjects.forEach(x => {
+    x.visible = !config.hidePlanets;
+})
+gui.add(config, 'hidePlanets').name('Hide planets').onChange(() => {
+    sphereObjects.forEach(x => {
+        x.visible = !config.hidePlanets;
+    })
+})
+
 //#region 3d text
-const fontLoader = new FontLoader();
-fontLoader.load(
-    '/fonts/helvetiker_regular.typeface.json',
-    (font) => {
-        const sceneTitleGeometry = new TextGeometry('SOLAR SYSTEM', {
-            font: font,
-            size: 1000
-        });
-        const sceneTitleMaterial = new THREE.MeshStandardMaterial({ color: 'blue', wireframe: false});
-        const sceneTitle = new THREE.Mesh(sceneTitleGeometry, sceneTitleMaterial);
-        sceneTitle.position.set(13000, 200, -6000);
-        sceneTitle.rotation.y = -Math.PI / 2
+createText('SOLAR SYSTEM', 1000, 'blue', new THREE.Vector3(13000, 200, -600))
+    .then(sceneTitle => {
         scene.add(sceneTitle);
-    }
-)
+    })
+    .catch(error => {
+        console.error('Failed to create text:', error);
+    });
 //#endregion
 
 //#region ISS
-ISS.scale.set(0.1, 0.1, 0.1)
+let ISS = createISS(config.isReal);
+let issDistance = planetRadiuses.Earth + (config.isReal ? issParameters.distance.realDistance : issParameters.distance.fancyDistance);
+let issSpeed = config.isReal ? issParameters.speed.realSpeed : issParameters.distance.fancySpeed;
+ISS.position.set(Earth.position.x + issDistance, 0, Earth.position.z);
 scene.add(ISS);
-ISS.position.set(Earth.position.x + planetRadiuses.Earth + 5, 0, 0)
+gui.add(config, 'stopIss').name('Stop ISS');
 //#endregion
 
+//#region Rocket
+let Rocket = createRocket();
+scene.add(Rocket);
+//#endregion
+
+//#endregion
 
 //#region Свет
 const pointLight = new THREE.PointLight(0xffffff, 1, 500);
@@ -316,7 +240,7 @@ window.addEventListener("resize", (event) => {
 
 
 //#region Камера
-const camera = new THREE.PerspectiveCamera(75, sizes.width/sizes.height, 0.1, 20000);
+const camera = new THREE.PerspectiveCamera(75, sizes.width/sizes.height, 0.001, 20000);
 camera.position.set(200, 100, 0);
 scene.add(camera);
 camera.position.set(0, 50, 0);
@@ -356,7 +280,7 @@ const clock = new THREE.Clock();
 //#region Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-controls.target = Earth.position;
+controls.target = Rocket.position;
 gui.add(config, 'objectNumberToObserve').min(0).max(sphereObjects.length - 1).step(1).name('Observe object number').onChange(() => {
     controls.target = sphereObjects[config.objectNumberToObserve].position;
 })
@@ -368,8 +292,16 @@ const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
 
+    if (!config.stopIss) {
+        // ISS
+        ISS.position.x = Earth.position.x + (issDistance) * Math.cos(elapsedTime * issSpeed);
+        ISS.position.z = Earth.position.z + (issDistance) * Math.sin(elapsedTime * issSpeed);
+        
+    }
+    
     if (!config.stopMoving) {
         
+
         // Mercury
         Mercury.position.x = planetDistances.Mercury * Math.cos(elapsedTime * planetParameters.sunSpeed.Mercury);
         Mercury.position.z = planetDistances.Mercury * Math.sin(elapsedTime * planetParameters.sunSpeed.Mercury);
@@ -381,11 +313,6 @@ const tick = () => {
         // Earth
         Earth.position.x = planetDistances.Earth * Math.cos(elapsedTime * planetParameters.sunSpeed.Earth);
         Earth.position.z = planetDistances.Earth * Math.sin(elapsedTime * planetParameters.sunSpeed.Earth);
-
-        // ISS
-        ISS.position.x = Earth.position.x + planetRadiuses.Earth * 1.2 * Math.cos(elapsedTime * planetParameters.sunSpeed.Earth * 1.1);
-        ISS.position.z = Earth.position.z + planetRadiuses.Earth * 1.2 * Math.sin(elapsedTime * planetParameters.sunSpeed.Earth * 1.1);
-
 
         // Mars
         Mars.position.x = planetDistances.Mars * Math.cos(elapsedTime * planetParameters.sunSpeed.Mars);
@@ -418,6 +345,7 @@ const tick = () => {
         Saturn.rotation.y = elapsedTime * planetParameters.axisSpeed.Saturn;
         Uranus.rotation.y = elapsedTime * planetParameters.axisSpeed.Uranus;
         Neptune.rotation.y = elapsedTime * planetParameters.axisSpeed.Neptune;
+        ISS.rotation.y = elapsedTime / 3;
     }
 
     // Update controls  

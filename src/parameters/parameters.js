@@ -77,3 +77,22 @@ export const RingParameters = {
         Neptune: 4
     }
 }
+
+export const issParameters = {
+    size: {
+        realSize: 58823,
+        fancySize: 10,
+    },
+    distance: {
+        realDistance: 0.055,
+        fancyDistance: 8 
+    },
+    speed: { 
+        realSpeed: 7.7 * 0.01,
+        fancySpeed: 35 * 0.01 
+    }
+}
+
+export const rocketParameters = {
+    
+}
