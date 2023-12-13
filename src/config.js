@@ -5,5 +5,6 @@ export let config = {
     stopMoving: true, 
     stopRotation: true,
     stopIss: false,
-    hidePlanets: true
+    showPlanets: true,
+    showSun: true
 };

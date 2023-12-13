@@ -2,14 +2,14 @@ import * as THREE from 'three';
 import { PlanetParameters, RingParameters } from '../parameters/parameters';
 import { PlanetMaterials } from '../materials/planetMaterials';
 
-export function createPlanet(name: string, isReal: boolean, isStar: boolean = false, ringsAngle: any = null) {
+export function createPlanet(name, isReal, isStar = false, ringsAngle = null) {
 
     const radius = !isReal ? PlanetParameters.fancyRadiuses[name] : PlanetParameters.realRadiuses[name];
     const sphereGeometry = new THREE.SphereGeometry(radius);
     const sphereMaterial = PlanetMaterials.planets[name];
     const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.castShadow = true;
-    sphere.receiveShadow = !isStar;
+    sphere.receiveShadow = true;
 
     if (!ringsAngle) {
         sphere.name = name;
@@ -24,6 +24,7 @@ export function createPlanet(name: string, isReal: boolean, isStar: boolean = fa
         rings.castShadow = true;
         rings.receiveShadow = true;
         group.add(sphere, rings);
+        group.name = name;
         return group;
     }
 }

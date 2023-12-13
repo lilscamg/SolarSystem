@@ -5,17 +5,18 @@ const planetTextures = PlanetTextures;
 
 export const PlanetMaterials = {
     planets: {
-        Earth: new THREE.MeshStandardMaterial({map: planetTextures.planets.Earth}),
-        Sun: new THREE.MeshStandardMaterial({map: planetTextures.planets.Sun, side: THREE.DoubleSide}),
-        Saturn: new THREE.MeshStandardMaterial({map: planetTextures.planets.Saturn}),
-        Jupiter: new THREE.MeshStandardMaterial({map: planetTextures.planets.Jupiter}),
-        Mars: new THREE.MeshStandardMaterial({map: planetTextures.planets.Mars}),
-        Mercury: new THREE.MeshStandardMaterial({map: planetTextures.planets.Mercury}),
-        Neptune: new THREE.MeshStandardMaterial({map: planetTextures.planets.Neptune}),
-        Uranus: new THREE.MeshStandardMaterial({map: planetTextures.planets.Uranus}),
-        Venus: new THREE.MeshStandardMaterial({map: planetTextures.planets.Venus}),
+        Earth: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Earth}),
+        //Earth: new THREE.MeshPhysicalMaterial({color: 0xffffff}),
+        Sun: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Sun, side: THREE.FrontSide}),
+        Saturn: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Saturn}),
+        Jupiter: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Jupiter}),
+        Mars: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Mars}),
+        Mercury: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Mercury}),
+        Neptune: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Neptune}),
+        Uranus: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Uranus}),
+        Venus: new THREE.MeshPhysicalMaterial({map: planetTextures.planets.Venus}),
     },
     rings: {
-        Saturn: new THREE.MeshStandardMaterial({map: planetTextures.rings.SaturnRings, side: THREE.DoubleSide})
+        Saturn: new THREE.MeshPhysicalMaterial({map: planetTextures.rings.SaturnRings, side: THREE.DoubleSide})
     }
 }

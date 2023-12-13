@@ -209,5 +209,8 @@ export function createISS(isReal) {
     //#endregion
     let issScale = isReal ? new THREE.Vector3(1, 1, 1).divideScalar(issParameters.size.realSize) :  new THREE.Vector3(1, 1, 1).divideScalar(issParameters.size.fancySize);
     ISS.scale.set(issScale.x, issScale.y, issScale.z);
+
+    ISS.castShadow = true;
+    ISS.receiveShadow = true;
     return ISS;
 }

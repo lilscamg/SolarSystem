@@ -7,9 +7,12 @@ export function createRocket() {
     const cylGeometry1 = new THREE.CylinderGeometry(4.5, 5, 8, 20);
     const cylGeometry2 = new THREE.CylinderGeometry(5, 5, 13, 20);
     const cylGeometry3 = new THREE.CylinderGeometry(4, 5, 8, 20);
-    const cylGeometry4 = new THREE.CylinderGeometry(1, 4, 8, 20);
+    const cylGeometry4 = new THREE.CylinderGeometry(0.5, 4, 8, 20);
     const cylGeometry5 = new THREE.CylinderGeometry(4.5, 3.5, 4, 20);
-    const planeGeometry1 = new THREE.PlaneGeometry(5, 13);
+    const planeGeometry1 = new THREE.BoxGeometry(5, 13, 0.5);
+    const cylGeometry6 = new THREE.CylinderGeometry(3, 3, 0.5, 20);
+    const cylGeometry7 = new THREE.CylinderGeometry(2.7, 2.7, 0.8, 20);
+
     const Rocket = new THREE.Group();
 
     //#region Основной корпус
@@ -26,7 +29,7 @@ export function createRocket() {
     Rocket.add(upperMainPart);
     //#endregion
     
-    //#region нос
+    //#region верх ракеты
     const top = new THREE.Mesh(cylGeometry4, rocketMaterials.redMaterial);
     top.position.set(0, 28.5, 0);
     Rocket.add(top);
@@ -40,14 +43,27 @@ export function createRocket() {
 
     //#region Крылья
     const wing1 = new THREE.Mesh(planeGeometry1, rocketMaterials.redMaterial);
-    wing1.position.set(3, 1, 3);
-    wing1.rotateY(-Math.PI / 4);
+    wing1.position.set(0, 5, 4);
+    wing1.rotateY(Math.PI / 2);
+    wing1.rotateZ(-Math.PI / 9);
     Rocket.add(wing1);
 
-    const wing2 = new THREE.Mesh(planeGeometry1, rocketMaterials.redMaterial);
-    wing2.position.set(-3, 1, -4);
-    wing2.rotateY(-Math.PI / 6);
+    const wing2= new THREE.Mesh(planeGeometry1, rocketMaterials.redMaterial);
+    wing2.position.set(0, 5, -4);
+    wing2.rotateY(Math.PI / 2);
+    wing2.rotateZ(Math.PI / 9);
     Rocket.add(wing2);
+    //#endregion
+
+    //#region Окно
+    const window1 = new THREE.Mesh(cylGeometry6, rocketMaterials.whiteMaterial);
+    const window2 = new THREE.Mesh(cylGeometry7, rocketMaterials.blackMaterial);
+    const window = new THREE.Group();
+    window.add(window1, window2);
+    window.position.set(4.8, 14.5, 0)
+    window.rotateZ(Math.PI / 2)
+
+    Rocket.add(window);
     //#endregion
 
     return Rocket;

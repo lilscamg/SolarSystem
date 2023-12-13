@@ -26,9 +26,29 @@ const scene = new THREE.Scene();
 //#endregion
 
 
+//#region Axis helper
+const axesHelper = new THREE.AxesHelper(1000);
+axesHelper.visible = false;
+gui.add(axesHelper, 'visible').name('Axis helper');
+scene.add(axesHelper)
+//#endregion
+
+
 //#region Звезды
 const starsTexture = 'textures/other/stars.jpg'
 const cubeTextureLoader = new THREE.CubeTextureLoader();
+if (config.showStars) {
+    scene.background = cubeTextureLoader.load([
+        starsTexture,
+        starsTexture,
+        starsTexture,
+        starsTexture,
+        starsTexture,
+        starsTexture
+    ]);
+}
+else
+    scene.background = null;
 gui.add(config, 'showStars').name('Show stars').onChange(() => {
     if (config.showStars) {
         scene.background = cubeTextureLoader.load([
@@ -69,26 +89,26 @@ let planetDistances = config.isReal ? planetParameters.realDistanceToSun : plane
 gui.add(config, 'stopMoving').name('Stop moving');
 gui.add(config, 'stopRotation').name('Stop rotating');
 gui.add(config, 'isReal').name('Is real').onChange(() => {
-
     // planets
     planetRadiuses = config.isReal ? planetParameters.realRadiuses : planetParameters.fancyRadiuses;
     planetDistances = config.isReal ? planetParameters.realDistanceToSun : planetParameters.fancyDistanceToSun; 
 
     sphereObjects.forEach(x => {
         let newRadius = planetRadiuses[x.name];
-
+    
         if (x instanceof THREE.Group) {
             let newSphereGeometry = new THREE.SphereGeometry(newRadius);
             let newRingsGeometry = new THREE.RingGeometry(
                 ringParameters.innerRadiuses[x.name] * newRadius, 
                 ringParameters.outerRadiuses[x.name] * newRadius)
-            // x.children[0] = newSphereGeometry;
-            // x.children[1] = newRingsGeometry;
+            x.children[0].geometry = newSphereGeometry;
+            x.children[1].geometry = newRingsGeometry;   
         }
         else {
             let newGeometry = new THREE.SphereGeometry(newRadius);
             x.geometry = newGeometry;
         }
+        
     });
 
     // iss
@@ -167,12 +187,18 @@ sphereObjects.push(Neptune);
 //#endregion
 
 sphereObjects.forEach(x => {
-    x.visible = !config.hidePlanets;
+    x.visible = config.showPlanets;
 })
-gui.add(config, 'hidePlanets').name('Hide planets').onChange(() => {
+gui.add(config, 'showPlanets').name('Show planets').onChange(() => {
     sphereObjects.forEach(x => {
-        x.visible = !config.hidePlanets;
+        x.visible = config.showPlanets;
     })
+})
+gui.add(config, 'showSun').name('Show Sun').onChange(() => {
+    if (config.showSun)
+        scene.remove(Sun);
+    else 
+        scene.add(Sun);
 })
 
 //#region 3d text
@@ -188,7 +214,7 @@ createText('SOLAR SYSTEM', 1000, 'blue', new THREE.Vector3(13000, 200, -600))
 //#region ISS
 let ISS = createISS(config.isReal);
 let issDistance = planetRadiuses.Earth + (config.isReal ? issParameters.distance.realDistance : issParameters.distance.fancyDistance);
-let issSpeed = config.isReal ? issParameters.speed.realSpeed : issParameters.distance.fancySpeed;
+let issSpeed = config.isReal ? issParameters.speed.realSpeed : issParameters.speed.fancySpeed;
 ISS.position.set(Earth.position.x + issDistance, 0, Earth.position.z);
 scene.add(ISS);
 gui.add(config, 'stopIss').name('Stop ISS');
@@ -196,25 +222,11 @@ gui.add(config, 'stopIss').name('Stop ISS');
 
 //#region Rocket
 let Rocket = createRocket();
+Rocket.position.set(300, 300, 0);
+Rocket.rotateZ(Math.PI / 2)
 scene.add(Rocket);
 //#endregion
 
-//#endregion
-
-//#region Свет
-const pointLight = new THREE.PointLight(0xffffff, 1, 500);
-gui.add(pointLight, 'intensity').min(1).max(1000000).step(1).name('point light intensity');
-gui.add(pointLight, 'distance').min(1).max(100000).step(1).name('point light distance');;
-pointLight.position.set(0, 0, 0); // Позиция света внутри объекта
-scene.add(pointLight);
-
-const sunLight = new THREE.PointLight(0xffffff, 1, 15000);
-sunLight.position.set(Sun.position);
-sunLight.castShadow = true;
-scene.add(sunLight)
-
-const ambientLight = new THREE.AmbientLight(0x404040, 30); // Цвет окружающего света
-scene.add(ambientLight);
 //#endregion
 
 
@@ -247,11 +259,21 @@ camera.position.set(0, 50, 0);
 //#endregion
 
 
-//#region Axis helper
-const axesHelper = new THREE.AxesHelper(1000);
-axesHelper.visible = true;
-gui.add(axesHelper, 'visible').name('Axis helper');
-scene.add(axesHelper)
+//#region Свет
+const pointLight = new THREE.PointLight(0xffffff, 350000, 100000);
+gui.add(pointLight, 'intensity').min(1).max(1000000).step(1).name('point light intensity');
+pointLight.position.set(0, 0, 0); // Позиция света внутри объекта
+pointLight.castShadow = true;
+pointLight.shadow.mapSize.width = 1024;
+pointLight.shadow.mapSize.height = 1024;
+// pointLight.shadow.radius = 5;
+Sun.receiveShadow = false;
+Sun.castShadow = false;
+scene.add(pointLight);
+
+const ambientLight = new THREE.AmbientLight(0x404040, 35); // Цвет окружающего света
+gui.add(ambientLight, 'intensity').min(0).max(100).step(1).name('ambient light intensity');
+scene.add(ambientLight);
 //#endregion
 
 
@@ -260,7 +282,9 @@ const renderer = new THREE.WebGLRenderer({
     canvas: canvas
 })
 renderer.setSize(sizes.width, sizes.height);
-renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+renderer.outputColorSpace = THREE.LinearDisplayP3ColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.render(scene, camera);
 //#endregion
 
@@ -280,7 +304,7 @@ const clock = new THREE.Clock();
 //#region Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-controls.target = Rocket.position;
+controls.target = ISS.position;
 gui.add(config, 'objectNumberToObserve').min(0).max(sphereObjects.length - 1).step(1).name('Observe object number').onChange(() => {
     controls.target = sphereObjects[config.objectNumberToObserve].position;
 })
@@ -301,7 +325,6 @@ const tick = () => {
     
     if (!config.stopMoving) {
         
-
         // Mercury
         Mercury.position.x = planetDistances.Mercury * Math.cos(elapsedTime * planetParameters.sunSpeed.Mercury);
         Mercury.position.z = planetDistances.Mercury * Math.sin(elapsedTime * planetParameters.sunSpeed.Mercury);
@@ -346,6 +369,7 @@ const tick = () => {
         Uranus.rotation.y = elapsedTime * planetParameters.axisSpeed.Uranus;
         Neptune.rotation.y = elapsedTime * planetParameters.axisSpeed.Neptune;
         ISS.rotation.y = elapsedTime / 3;
+        Rocket.rotation.x = elapsedTime / 4;
     }
 
     // Update controls  
