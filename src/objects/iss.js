@@ -22,7 +22,7 @@ export function createISS(isReal) {
     const mainPart1 = new THREE.Mesh(cylGeometry1, issMaterials.whiteMaterial);
     ISS.add(mainPart1);
 
-    const mainPart2 = new THREE.Mesh(cylGeometry3, issMaterials.silverMaterial);
+    const mainPart2 = new THREE.Mesh(cylGeometry3, issMaterials.whiteMaterial);
     mainPart2.rotateZ(Math.PI / 2);
     mainPart2.position.set(2, 0, 0)
     ISS.add(mainPart2);
@@ -44,22 +44,22 @@ export function createISS(isReal) {
     // #endregion
 
     //#region цилиндры за которую цепляются основные батареи
-    const little1 = new THREE.Mesh(smallCylGeometry, issMaterials.whiteMaterial);
+    const little1 = new THREE.Mesh(smallCylGeometry, issMaterials.darkGrayMaterial);
     little1.position.set(0, 20, 0);
     little1.rotateX(Math.PI / 2);
     ISS.add(little1);
 
-    const little2 = new THREE.Mesh(smallCylGeometry, issMaterials.whiteMaterial);
+    const little2 = new THREE.Mesh(smallCylGeometry, issMaterials.darkGrayMaterial);
     little2.position.set(0, 26, 0);
     little2.rotateX(Math.PI / 2);
     ISS.add(little2);
 
-    const little3 = new THREE.Mesh(smallCylGeometry, issMaterials.whiteMaterial);
+    const little3 = new THREE.Mesh(smallCylGeometry, issMaterials.darkGrayMaterial);
     little3.position.set(0, -20, 0);
     little3.rotateX(Math.PI / 2);
     ISS.add(little3);
 
-    const little4 = new THREE.Mesh(smallCylGeometry, issMaterials.whiteMaterial);
+    const little4 = new THREE.Mesh(smallCylGeometry, issMaterials.darkGrayMaterial);
     little4.position.set(0, -26, 0);
     little4.rotateX(Math.PI / 2);
     ISS.add(little4);
@@ -212,5 +212,11 @@ export function createISS(isReal) {
 
     ISS.castShadow = true;
     ISS.receiveShadow = true;
+
+    ISS.children.forEach(children => {
+        children.castShadow = true;
+        children.receiveShadow = true;
+    })
+
     return ISS;
 }

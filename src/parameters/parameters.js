@@ -1,6 +1,17 @@
 const sunRadius = 109;
 
 export const PlanetParameters = {
+    sphereOrder: {
+        Sun: 0, 
+        Mercury: 1,
+        Venus: 2,
+        Earth: 3,
+        Mars: 4,
+        Jupiter: 5,
+        Saturn: 6,
+        Uranus: 7,
+        Neptune: 8,
+    },
     realRadiuses: {
         Sun: sunRadius, 
         Mercury: 0.38,
@@ -46,14 +57,14 @@ export const PlanetParameters = {
         Neptune: 1300,
     },
     sunSpeed: {
-        Mercury: 47.36 * 0.01,
+        Mercury: -47.36 * 0.01,
         Venus: 35.02 * 0.01,
-        Earth: 26.71 * 0.01,
-        Mars: 24.13 * 0.01,
-        Jupiter: 13.07 * 0.01,
-        Saturn: 9.69 * 0.01,
+        Earth: -26.71 * 0.01,
+        Mars: -24.13 * 0.01,
+        Jupiter: -13.07 * 0.01,
+        Saturn: -9.69 * 0.01,
         Uranus: 6.81 * 0.01,
-        Neptune: 5.43 * 0.01,
+        Neptune: -5.43 * 0.01,
     },
     axisSpeed: {
         Mercury: (360 / 59 / 24) * 0.1, // в долях суток
@@ -69,12 +80,12 @@ export const PlanetParameters = {
 
 export const RingParameters = {
     innerRadiuses: {
-        Saturn: 1.7,
-        Neptune: 2
+        Saturn: 1.4,
+        Uranus: 1.4
     },
     outerRadiuses: {
         Saturn: 2.3,
-        Neptune: 4
+        Uranus: 1.8
     }
 }
 
@@ -89,10 +100,44 @@ export const issParameters = {
     },
     speed: { 
         realSpeed: 7.7 * 0.01,
-        fancySpeed: 35 * 0.01 
+        fancySpeed: 80 * 0.01 
     }
 }
 
 export const rocketParameters = {
-    
+    speed: 10 * 0.0001,
+    targets: {
+        Mercury: 1,
+        Venus: 2,
+        Earth: 3,
+        Mars: 4,
+        Jupiter: 5,
+        Saturn: 6,
+        Uranus: 7,
+        Neptune: 8,
+    },
+    size: {
+        fancySize: 1 / 3,
+        realSize: 1 / 100 
+    }
+}
+
+export const asteroidParameters = {
+    maxSize: 20,
+    flightDuration: 5,
+    color: 0x868777,
+    belt: {
+        number: {
+            fancyNumber: 10000,
+            realNumber: 50000
+        },
+        radius: {
+            fancyRadius: 560,
+            realRadius: 1000 + sunRadius
+        },
+        spread: {
+            fancySpread: 10,
+            realSpread: 1
+        }
+    }
 }

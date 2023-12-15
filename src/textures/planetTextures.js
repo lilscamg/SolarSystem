@@ -17,5 +17,6 @@ export const PlanetTextures = {
     },
     rings: {
         SaturnRings: textureLoader.load('/textures/rings/saturn ring.png'),
+        UranusRings: textureLoader.load('/textures/rings/uranus ring.png'),
     }
 }
