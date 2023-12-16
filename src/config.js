@@ -11,5 +11,6 @@ export let config = {
     showSun: true, 
     observeIss: false,
     observeRocket: false,
-    rocketTarget: 5
+    rocketTarget: 5,
+    showText: true
 };

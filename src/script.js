@@ -20,7 +20,8 @@ function getRandomAngle() {
 
 
 //#region GUI
-const gui = new dat.GUI()
+const gui = new dat.GUI();
+const defailtFolder = gui.addFolder('Default settings');
 //#endregion
 
 
@@ -33,7 +34,7 @@ const scene = new THREE.Scene();
 const axesHelper = new THREE.AxesHelper(1000);
 if (!config.showAxes)
     axesHelper.visible = false;
-gui.add(axesHelper, 'visible').name('Show axes');
+defailtFolder.add(axesHelper, 'visible').name('Show axes');
 scene.add(axesHelper)
 //#endregion
 
@@ -53,7 +54,7 @@ if (config.showStars) {
 }
 else
     scene.background = null;
-gui.add(config, 'showStars').name('Show stars').onChange(() => {
+defailtFolder.add(config, 'showStars').name('Show stars').onChange(() => {
     if (config.showStars) {
         scene.background = cubeTextureLoader.load([
             starsTexture,
@@ -90,9 +91,9 @@ const ringParameters = RingParameters;
 let planetRadiuses = config.isReal ? planetParameters.realRadiuses : planetParameters.fancyRadiuses;
 let planetDistances = config.isReal ? planetParameters.realDistanceToSun : planetParameters.fancyDistanceToSun; 
 
-gui.add(config, 'stopMoving').name('Stop moving');
-gui.add(config, 'stopRotation').name('Stop rotating');
-gui.add(config, 'isReal').name('Is real').onChange(() => {
+defailtFolder.add(config, 'stopMoving').name('Stop moving');
+defailtFolder.add(config, 'stopRotation').name('Stop rotating');
+defailtFolder.add(config, 'isReal').name('Is real').onChange(() => {
     // planets
     planetRadiuses = config.isReal ? planetParameters.realRadiuses : planetParameters.fancyRadiuses;
     planetDistances = config.isReal ? planetParameters.realDistanceToSun : planetParameters.fancyDistanceToSun; 
@@ -212,15 +213,16 @@ sphereObjects.push(Neptune);
 //#endregion
 
 sphereObjects.forEach(x => {
-    x.visible = config.showPlanets;
+    if (x.name !== 'Sun')
+        x.visible = config.showPlanets;
 })
-gui.add(config, 'showPlanets').name('Show planets').onChange(() => {
+defailtFolder.add(config, 'showPlanets').name('Show planets').onChange(() => {
     sphereObjects.forEach(x => {
         if (x.name !== 'Sun')
             x.visible = config.showPlanets;
     })
 })
-gui.add(config, 'showSun').name('Show Sun').onChange(() => {
+defailtFolder.add(config, 'showSun').name('Show Sun').onChange(() => {
     if (!config.showSun)
         scene.remove(Sun);
     else 
@@ -231,6 +233,10 @@ gui.add(config, 'showSun').name('Show Sun').onChange(() => {
 createText('SOLAR SYSTEM', 1000, 'blue', new THREE.Vector3(10000, 200, -5000))
     .then(sceneTitle => {
         scene.add(sceneTitle);
+        sceneTitle.visible = config.showText;
+        defailtFolder.add(config, 'showText').name('Show text').onChange(() => {
+            sceneTitle.visible = config.showText;
+        })
     })
     .catch(error => {
         console.error('Failed to create text:', error);
@@ -305,22 +311,23 @@ scene.add(camera);
 //#region Свет
 const lightsFolder = gui.addFolder('Lights');
 
-const pointLight = new THREE.PointLight(0xffffff, 350000, Infinity);
-pointLight.position.set(Sun.position.x, Sun.position.y, Sun.position.z); // Позиция света внутри объекта
+const pointLight = new THREE.PointLight(0xffffff, 35000, Infinity);
+pointLight.position.set(0, 0, 0); // Позиция света внутри объекта
 pointLight.castShadow = true;
-pointLight.shadow.mapSize.width = 1024;
-pointLight.shadow.mapSize.height = 1024;
+pointLight.shadow.mapSize.width = 4096;
+pointLight.shadow.mapSize.height = 4096;
 // pointLight.shadow.radius = 15;
 
 Sun.receiveShadow = false;
 Sun.castShadow = true;
-scene.add(pointLight);
+Sun.add(pointLight);
 
 const ambientLight = new THREE.AmbientLight(0x404040, 35); // Цвет окружающего света
 scene.add(ambientLight);
 
 lightsFolder.add(ambientLight, 'intensity').min(0).max(100).step(1).name('Ambient light intensity');
 lightsFolder.add(pointLight, 'intensity').min(1).max(1000000).step(1).name('Point light intensity');
+lightsFolder.add(pointLight, 'distance').min(1).max(1000000).step(1).name('Point light distance');
 //#endregion
 
 
