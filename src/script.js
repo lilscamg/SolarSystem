@@ -311,7 +311,7 @@ scene.add(camera);
 //#region Свет
 const lightsFolder = gui.addFolder('Lights');
 
-const pointLight = new THREE.PointLight(0xffffff, 35000, Infinity);
+const pointLight = new THREE.PointLight(0xffffff, 350000, Infinity);
 pointLight.position.set(0, 0, 0); // Позиция света внутри объекта
 pointLight.castShadow = true;
 pointLight.shadow.mapSize.width = 4096;
