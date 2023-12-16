@@ -343,11 +343,6 @@ renderer.render(scene, camera);
 //#endregion
 
 
-//#region Clock
-const clock = new THREE.Clock();
-//#endregion
-
-
 //#region Анимации
 // Анимация движения астероид по нажатию на пробел
 document.addEventListener('keydown', (event) => {
@@ -424,6 +419,7 @@ observeFolder.add(config, 'observeRocket').name('Observe rocket').onChange(() =>
 //#endregion
 
 
+const clock = new THREE.Clock();
 let time = Date.now();
 //#region Анимация
 const tick = () => {
@@ -447,7 +443,6 @@ const tick = () => {
     }
 
     if (!config.stopMoving) {
-        
         // Mercury
         Mercury.position.x = planetDistances.Mercury * Math.cos(elapsedTime * planetParameters.sunSpeed.Mercury);
         Mercury.position.z = planetDistances.Mercury * Math.sin(elapsedTime * planetParameters.sunSpeed.Mercury);
@@ -495,8 +490,6 @@ const tick = () => {
         Rocket.rotation.z = elapsedTime / 2;
         asteroidBelt.rotation.y = elapsedTime / 20;
     }
-
-    
 
     // Update controls  
     controls.update()
